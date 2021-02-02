@@ -8,14 +8,20 @@
 # LICENSE:  GNU GPL v3 (http://www.gnu.org/licenses/gpl.html)
 # DEPENDENCIES:   byzanz,zenity,notify-send
 
+# Usage: 
+#   byzanz-gui gif 
+#   byzanz-gui avi
+
 set -e
 
 # Time and date
 TIME=$(date +"%Y-%m-%d_%H%M%S")
  
 # Delay before starting
-DELAY=10
+DELAY=$(zenity --entry --title "Recoding delay" --text "Delay:" --width 200 --height 100 --entry-text 0 2>/dev/null)
  
+
+
 # Standard screencast folder
 FOLDER=$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Pictures")
  
@@ -28,7 +34,7 @@ beep() {
 }
  
 # Custom recording duration as set by user
-USERDUR=$(zenity --entry --title "Recoding duration" --text "Please enter the screencast duration in seconds:" --width 200 --height 100 2>/dev/null)
+USERDUR=$(zenity --entry --title "Recoding duration" --text "Duration:" --width 200 --height 100 --entry-text 10 2>/dev/null)
  
 # Duration and output file
 if [ $USERDUR -gt 0 ]; then
@@ -45,13 +51,15 @@ read W < <(awk -F: '/Width/{print $2}' <<< "$XWININFO")
 read H < <(awk -F: '/Height/{print $2}' <<< "$XWININFO")
  
 # Notify the user of recording time and delay
-notify-send "GIFRecorder" "Recording duration set to $D seconds. Recording will start in $DELAY seconds."
+notify-send -t 500 "GIFRecorder" "Recording duration set to $D seconds. Recording will start in $DELAY seconds."
  
 #Actual recording
 sleep $DELAY
+notify-send -t 500 -u critical "GIFRecorder" "START"
+sleep 0.51
 beep
-byzanz-record -c --verbose --delay=0 --duration=$D --x=$X --y=$Y --width=$W --height=$H "$FOLDER/GIFrecord_$TIME.gif"
+byzanz-record -c --verbose --delay=0 --duration=$D --x=$X --y=$Y --width=$W --height=$H "$FOLDER/GIFrecord_$TIME.$1"
 beep
- 
+
 # Notify the user of end of recording.
-notify-send "GIFRecorder" "Screencast saved to $FOLDER/GIFrecord_$TIME.gif"
+notify-send "GIFRecorder" "Screencast saved to $FOLDER/GIFrecord_$TIME.$1"
